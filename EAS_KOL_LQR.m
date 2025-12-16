@@ -177,35 +177,52 @@ fprintf('  Control cost   : %.2f\n',control_cost);
 fprintf('  Total J        : %.2f\n\n',J);
 
 %% ------------------------------------------------------------------------
-%  BAGIAN 6 : PLOT RESPON
+%  BAGIAN 6 : PLOT RESPON & SINYAL KONTROL (LQR - NILAI AKTUAL)
 %% ------------------------------------------------------------------------
 
-figure('Name','Respon State','Position',[100 100 1100 400]);
+% Setpoint aktual (fisik)
+T_sp  = 25;   % °C
+RH_sp = 60;   % %
 
-subplot(1,2,1);
-plot(t,x(:,1),'b','LineWidth',2); hold on;
-yline(0,'r--','Setpoint');
-yline( 0.02*abs(x0(1)),'k:');
-yline(-0.02*abs(x0(1)),'k:');
-grid on;
-xlabel('Waktu (s)');
-ylabel('Deviasi Suhu (°C)');
-title('Respon Suhu Internal x_1');
+% Konversi deviasi -> nilai aktual (BENAR)
+T_actual  = x(:,1) + T_sp;     % suhu aktual
+RH_actual = x(:,2) + RH_sp;    % kelembaban aktual
 
-subplot(1,2,2);
-plot(t,x(:,2),'r','LineWidth',2); hold on;
-yline(0,'b--','Setpoint');
-yline( 0.02*abs(x0(2)),'k:');
-yline(-0.02*abs(x0(2)),'k:');
-grid on;
-xlabel('Waktu (s)');
-ylabel('Deviasi Kelembaban (%)');
-title('Respon Kelembaban Internal x_2');
+%% --- Plot respon suhu & kelembaban aktual ---
+figure('Name','Respon Suhu dan Kelembaban Aktual - LQR');
 
-figure('Name','Sinyal Kontrol','Position',[100 100 900 350]);
-plot(t,u,'LineWidth',2);
-grid on;
+yyaxis left
+plot(t, T_actual, 'b', 'LineWidth', 2); hold on;
+yline(T_sp, 'b--', 'LineWidth', 1.5);
+ylabel('Suhu Internal (°C)');
+
+yyaxis right
+plot(t, RH_actual, 'r', 'LineWidth', 2);
+yline(RH_sp, 'r--', 'LineWidth', 1.5);
+ylabel('Kelembaban Internal (%)');
+
 xlabel('Waktu (s)');
-ylabel('Control Input');
-legend('u_1 (Heating)','u_2 (PAD)','u_3 (Ventilasi)');
-title('Sinyal Kontrol LQR');
+grid on;
+title('Respon Suhu dan Kelembaban Internal Aktual (LQR)');
+legend('Suhu Aktual','Setpoint Suhu',...
+       'Kelembaban Aktual','Setpoint Kelembaban',...
+       'Location','best');
+
+%% --- Plot sinyal kontrol LQR ---
+figure('Name','Sinyal Kontrol Aktual - LQR');
+
+plot(t, u(:,1), 'b', 'LineWidth', 1.8); hold on;
+plot(t, u(:,2), 'r', 'LineWidth', 1.8);
+plot(t, u(:,3), 'g', 'LineWidth', 1.8);
+
+yline(0,'k--');
+xlabel('Waktu (s)');
+ylabel('Sinyal Kontrol');
+grid on;
+title('Sinyal Kontrol LQR (Heating, PAD Cooling, Ventilasi)');
+legend('Heating','PAD Cooling','Ventilasi','Location','best');
+
+% === ATUR SKALA Y: INTERVAL 5, MAKS 20 ===
+ylim([-20 20]);
+yticks(-20:5:20);
+
